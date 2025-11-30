@@ -12,7 +12,11 @@ from llama_index.core.settings import Settings
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
+from dotenv import load_dotenv
 import yaml
+
+# Load environment variables
+load_dotenv()
 
 
 class VectorStore:
@@ -203,7 +207,15 @@ class VectorStore:
                 sys.stdout.flush()
                 
             except Exception as e:
-                print(f"  ❌ Error inserting batch {batch_num}: {e}", flush=True)
+                error_msg = str(e)
+                print(f"  ❌ Error inserting batch {batch_num}: {error_msg}", flush=True)
+                
+                # Check for API key issues specifically
+                if "401" in error_msg or "API key" in error_msg or "Authentication" in error_msg:
+                    print(f"\n  ⚠️  OPENAI API KEY ERROR!", flush=True)
+                    print(f"  Please check your .env file has OPENAI_API_KEY set correctly.", flush=True)
+                    print(f"  The process will continue but this batch failed.", flush=True)
+                
                 import traceback
                 traceback.print_exc()
                 sys.stdout.flush()
