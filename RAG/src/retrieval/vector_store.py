@@ -73,7 +73,6 @@ class VectorStore:
     def add_documents(self, chunks: List[Dict]):
         """Add document chunks to the vector store with parallel processing and batch uploading."""
         from llama_index.core.schema import Document
-        from llama_index.core.node_parser import SimpleNodeParser
         from concurrent.futures import ThreadPoolExecutor, as_completed
         import time
         import sys
@@ -166,11 +165,14 @@ class VectorStore:
         except:
             current_count = 0
         
-        # Create node parser
-        node_parser = SimpleNodeParser.from_defaults(chunk_size=6000, chunk_overlap=0)
+        # Skip re-chunking since documents are already chunked
+        # Convert Documents directly to Nodes without parsing
+        from llama_index.core.schema import TextNode
         
-        # Process in larger batches for better throughput
-        insert_batch_size = 50  # Increased from 20 for better performance
+        # Process in batches - use smaller size to avoid token limits
+        # OpenAI has a 300k token limit per request, so we need to be conservative
+        # Average chunk is ~512 tokens, so 50 chunks = ~25k tokens (safe margin)
+        insert_batch_size = 50  # Conservative batch size to avoid token limits
         inserted_count = 0
         total_batches = (total_docs + insert_batch_size - 1) // insert_batch_size
         
@@ -184,8 +186,38 @@ class VectorStore:
                 sys.stdout.flush()
                 batch_start = time.time()
                 
-                # Convert documents to nodes (will split if too long for embedding API)
-                nodes = node_parser.get_nodes_from_documents(batch)
+                # Convert documents directly to nodes without re-chunking
+                # Documents are already chunked, but we need to check for oversized chunks
+                # OpenAI embedding model has 8192 token limit per text
+                nodes = []
+                for doc in batch:
+                    # Estimate tokens (rough: 1 token ≈ 4 characters)
+                    text_length = len(doc.text)
+                    estimated_tokens = text_length // 4
+                    
+                    # If chunk is too large, split it further
+                    if estimated_tokens > 7000:  # Safety margin below 8192 limit
+                        # Split into smaller chunks
+                        chunk_size = 6000 * 4  # ~6000 tokens in characters
+                        text = doc.text
+                        chunk_index = 0
+                        for i in range(0, len(text), chunk_size):
+                            chunk_text = text[i:i + chunk_size]
+                            chunk_metadata = doc.metadata.copy()
+                            chunk_metadata['split_index'] = chunk_index
+                            node = TextNode(
+                                text=chunk_text,
+                                metadata=chunk_metadata
+                            )
+                            nodes.append(node)
+                            chunk_index += 1
+                    else:
+                        # Normal sized chunk
+                        node = TextNode(
+                            text=doc.text,
+                            metadata=doc.metadata
+                        )
+                        nodes.append(node)
                 
                 # Insert all nodes in this batch at once
                 self.index.insert_nodes(nodes)
@@ -209,6 +241,26 @@ class VectorStore:
             except Exception as e:
                 error_msg = str(e)
                 print(f"  ❌ Error inserting batch {batch_num}: {error_msg}", flush=True)
+                
+                # Check for rate limit errors and retry
+                if "429" in error_msg or "rate limit" in error_msg.lower() or "RateLimitError" in error_msg:
+                    print(f"  ⏳ Rate limit hit, waiting 10 seconds before retry...", flush=True)
+                    sys.stdout.flush()
+                    time.sleep(10)
+                    try:
+                        # Retry the batch
+                        nodes = []
+                        for doc in batch:
+                            node = TextNode(text=doc.text, metadata=doc.metadata)
+                            nodes.append(node)
+                        self.index.insert_nodes(nodes)
+                        inserted_count += len(nodes)
+                        print(f"  ✓ Batch {batch_num} retry successful", flush=True)
+                        sys.stdout.flush()
+                        continue
+                    except Exception as retry_error:
+                        print(f"  ❌ Retry failed: {retry_error}", flush=True)
+                        sys.stdout.flush()
                 
                 # Check for API key issues specifically
                 if "401" in error_msg or "API key" in error_msg or "Authentication" in error_msg:
