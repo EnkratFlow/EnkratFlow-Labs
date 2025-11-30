@@ -1,0 +1,43 @@
+# RAG System Configuration
+
+# Chunking Settings
+chunking:
+  strategy: semantic
+  chunk_size: 512
+  chunk_overlap: 50
+  preserve_headers: true
+
+# Retrieval Settings
+retrieval:
+  top_k: 15  # Increased from 5 to retrieve more relevant chunks
+  similarity_threshold: 0.7
+  use_hybrid_search: true
+  rerank: false
+  max_content_length: 2000  # Increased from 500 to include more context per chunk
+
+# LLM Settings
+llm:
+  model: gpt-4o-mini
+  temperature: 0.7
+  max_tokens: 1000
+
+# Embedding Settings
+embeddings:
+  model: text-embedding-3-small
+  batch_size: 100
+
+# Data Sources
+sources:
+  obsidian:
+    enabled: true
+    vault_path: /Users/guyrobo/MindOS/MindOS-Core/MindOS
+    file_extensions: [.md]
+  notion:
+    enabled: false
+  github:
+    enabled: false
+  email:
+    enabled: false
+  pdf:
+    enabled: false
+

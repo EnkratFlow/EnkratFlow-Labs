@@ -1,0 +1,22 @@
+# Core RAG Framework
+llama-index>=0.12.0  # Updated: supports Python 3.12+
+llama-index-vector-stores-chroma>=0.5.0  # ChromaDB integration
+chromadb>=0.5.0  # Updated: supports Python 3.12+
+openai>=1.12.0
+
+# Data Processing
+pypdf==4.0.1
+markdown==3.5.2
+python-dotenv==1.0.1
+
+# Optional - Web UI
+streamlit>=1.40.0  # Updated: supports Python 3.14
+fastapi>=0.115.0  # Updated: supports Python 3.14
+uvicorn>=0.32.0  # Updated: supports Python 3.14
+
+# Utilities
+tqdm==4.66.1
+pyyaml==6.0.1
+python-frontmatter==1.0.0
+requests==2.31.0
+
