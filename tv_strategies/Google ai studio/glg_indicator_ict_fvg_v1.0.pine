@@ -1,0 +1,119 @@
+//@version=6
+// =====================================================================================
+// | Indicator Name: ICT Fair Value Gap (FVG) Detector v1.0 (Attempted v6)             |
+// | Author        : Your Name / AI Assistant                                          |
+// | Version       : 1.0_v6                                                            |
+// | Description   : Identifies and draws ICT Fair Value Gaps (Imbalances).            |
+// |               : Bullish FVG (BISI) and Bearish FVG (SIBI). (Adapted for v6)     |
+// =====================================================================================
+indicator("ICT FVG Detector v1.0 (v6)", overlay=true, max_boxes_count = 200)
+
+// === INPUTS ===
+bool showBullishFVG = input.bool(true, title="Show Bullish FVGs (BISI)")
+color bullishColor = input.color(color.new(color.green, 75), title="Bullish FVG Color")
+bool showBearishFVG = input.bool(true, title="Show Bearish FVGs (SIBI)")
+color bearishColor = input.color(color.new(color.red, 75), title="Bearish FVG Color")
+bool extendFVG = input.bool(true, title="Extend FVG Boxes Until Mitigated or Max Bars")
+int maxExtensionBars = input.int(200, title="Max Bars to Extend FVG", minval=1)
+bool deleteOnMitigation = input.bool(true, title="Delete FVG Box on Full Mitigation")
+
+// === FVG DATA STRUCTURES ===
+// Using explicit generic types for arrays
+var box[] bullishBoxes = array.new<box>()
+var float[] bullishBoxTops = array.new<float>()
+var float[] bullishBoxBottoms = array.new<float>()
+var int[] bullishBoxStartBars = array.new<int>()
+
+var box[] bearishBoxes = array.new<box>()
+var float[] bearishBoxTops = array.new<float>()
+var float[] bearishBoxBottoms = array.new<float>()
+var int[] bearishBoxStartBars = array.new<int>()
+
+// === LOGIC ===
+
+// Bullish FVG Detection (BISI)
+bool isBullishFVG_condition = high[2] < low[0] and low[1] > high[2] // Explicit type for the condition variable
+
+if isBullishFVG_condition and showBullishFVG and barstate.isconfirmed
+    float fvgTop = low[0]    // Explicit type
+    float fvgBottom = high[2] // Explicit type
+    // Explicit type for the newBox variable
+    box newBox = box.new(left=time[2], top=fvgTop, right=time[0], bottom=fvgBottom,
+         bgcolor=na, border_color=bullishColor, border_width=1,
+         extend=extend.none, text="")
+    box.set_bgcolor(newBox, bullishColor)
+    array.push(bullishBoxes, newBox)
+    array.push(bullishBoxTops, fvgTop)
+    array.push(bullishBoxBottoms, fvgBottom)
+    array.push(bullishBoxStartBars, bar_index[2])
+
+
+// Bearish FVG Detection (SIBI)
+bool isBearishFVG_condition = low[2] > high[0] and high[1] < low[2] // Explicit type
+
+if isBearishFVG_condition and showBearishFVG and barstate.isconfirmed
+    float fvgTop = low[2]     // Explicit type
+    float fvgBottom = high[0]  // Explicit type
+    // Explicit type for the newBox variable
+    box newBox = box.new(left=time[2], top=fvgTop, right=time[0], bottom=fvgBottom,
+         bgcolor=na, border_color=bearishColor, border_width=1,
+         extend=extend.none, text="")
+    box.set_bgcolor(newBox, bearishColor)
+    array.push(bearishBoxes, newBox)
+    array.push(bearishBoxTops, fvgTop)
+    array.push(bearishBoxBottoms, fvgBottom)
+    array.push(bearishBoxStartBars, bar_index[2])
+
+
+// === FVG BOX MANAGEMENT (Extend and Delete) ===
+// Function to manage bullish FVG boxes
+manageBullishFVGs() =>
+    for i = array.size(bullishBoxes) - 1 to 0
+        // Explicit types for variables retrieved from arrays
+        box boxId = array.get(bullishBoxes, i)
+        float bTop = array.get(bullishBoxTops, i)
+        float bBottom = array.get(bullishBoxBottoms, i)
+        int bStartBar = array.get(bullishBoxStartBars, i)
+
+        bool isMitigated = deleteOnMitigation and close < bBottom // Explicit type
+        bool isTooOld = bar_index > bStartBar + maxExtensionBars   // Explicit type
+
+        if isMitigated or isTooOld
+            box.delete(boxId)
+            // Removing from multiple arrays. Ensure indices remain consistent.
+            // This pattern is okay when removing from the end or if all arrays are parallel.
+            array.remove(bullishBoxes, i)
+            array.remove(bullishBoxTops, i)
+            array.remove(bullishBoxBottoms, i)
+            array.remove(bullishBoxStartBars, i)
+        else if extendFVG
+            box.set_right(boxId, time + (time - time[1]) * maxExtensionBars)
+
+
+// Function to manage bearish FVG boxes
+manageBearishFVGs() =>
+    for i = array.size(bearishBoxes) - 1 to 0
+        box boxId = array.get(bearishBoxes, i)
+        float bTop = array.get(bearishBoxTops, i)
+        float bBottom = array.get(bearishBoxBottoms, i)
+        int bStartBar = array.get(bearishBoxStartBars, i)
+
+        bool isMitigated = deleteOnMitigation and close > bTop
+        bool isTooOld = bar_index > bStartBar + maxExtensionBars
+
+        if isMitigated or isTooOld
+            box.delete(boxId)
+            array.remove(bearishBoxes, i)
+            array.remove(bearishBoxTops, i)
+            array.remove(bearishBoxBottoms, i)
+            array.remove(bearishBoxStartBars, i)
+        else if extendFVG
+            box.set_right(boxId, time + (time - time[1]) * maxExtensionBars)
+
+
+// Call management functions on each bar
+if barstate.isconfirmed
+    if showBullishFVG
+        manageBullishFVGs()
+    if showBearishFVG
+        manageBearishFVGs()

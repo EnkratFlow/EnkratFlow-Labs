@@ -1,0 +1,31 @@
+//@version=6
+indicator("ICT Fair Value Gap (FVG)", overlay=true)
+
+// Get candle values from previous bars
+high1 = high[2]  // High from 2 bars ago
+low1  = low[2]   // Low from 2 bars ago
+high2 = high[1]  // High from 1 bar ago
+low2  = low[1]   // Low from 1 bar ago
+high3 = high     // Current high
+low3  = low      // Current low
+
+// Bullish FVG: gap between high of candle 1 and low of candle 3
+bullish_fvg = low1 > high3
+
+// Bearish FVG: gap between low of candle 1 and high of candle 3
+bearish_fvg = high1 < low3
+
+// Plot Bullish FVG
+plotshape(bullish_fvg, style=shape.triangleup, location=location.belowbar, color=color.green, size=size.tiny, title="Bullish FVG")
+bgcolor(bullish_fvg ? color.new(color.green, 90) : na, offset=-1)
+
+// Plot Bearish FVG
+plotshape(bearish_fvg, style=shape.triangledown, location=location.abovebar, color=color.red, size=size.tiny, title="Bearish FVG")
+bgcolor(bearish_fvg ? color.new(color.red, 90) : na, offset=-1)
+
+// Optionally, draw the FVG zone as a box
+if bullish_fvg
+    box.new(bar_index-2, low1, bar_index, high3, border_color=color.green, bgcolor=color.new(color.green, 90))
+
+if bearish_fvg
+    box.new(bar_index-2, low3, bar_index, high1, border_color=color.red, bgcolor=color.new(color.red, 90))
