@@ -1,2 +1,2 @@
-# MindOS RAG System
+# EnkratFlow RAG System
 

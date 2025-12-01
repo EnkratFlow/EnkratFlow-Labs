@@ -27,7 +27,7 @@ def get_process_info(pid):
 def get_chunk_count():
     """Get current chunk count from ChromaDB."""
     db_path = "./chroma_db"
-    collection_name = "mindos_rag"
+    collection_name = "enkratflow_rag"
     
     if not os.path.exists(db_path):
         return 0

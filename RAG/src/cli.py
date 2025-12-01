@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Command-line interface for MindOS RAG System
+Command-line interface for EnkratFlow RAG System
 """
 
 import os
@@ -200,7 +200,7 @@ def clear_command(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='MindOS RAG System CLI')
+    parser = argparse.ArgumentParser(description='EnkratFlow RAG System CLI')
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
     
     # Index command

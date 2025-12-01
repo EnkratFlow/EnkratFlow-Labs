@@ -1,9 +1,9 @@
-"""Setup script for MindOS RAG System"""
+"""Setup script for EnkratFlow RAG System"""
 
 from setuptools import setup, find_packages
 
 setup(
-    name="mindos-rag",
+    name="enkratflow-rag",
     version="0.1.0",
     description="Personal RAG system for semantic search across all data sources",
     author="Guy Roberts",
@@ -22,7 +22,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "mindos-rag=cli:main",
+            "enkratflow-rag=cli:main",
         ],
     },
     python_requires=">=3.10",

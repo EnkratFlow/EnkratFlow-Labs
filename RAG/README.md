@@ -1,4 +1,4 @@
-# MindOS RAG System
+# EnkratFlow RAG System
 
 Personal RAG (Retrieval-Augmented Generation) system for semantic search across all your data sources.
 

@@ -22,7 +22,7 @@ load_dotenv()
 class VectorStore:
     """Wrapper for ChromaDB vector store."""
     
-    def __init__(self, db_path: str = "./chroma_db", collection_name: str = "mindos_rag"):
+    def __init__(self, db_path: str = "./chroma_db", collection_name: str = "enkratflow_rag"):
         self.db_path = db_path
         self.collection_name = collection_name
         

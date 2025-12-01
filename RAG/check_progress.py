@@ -9,7 +9,7 @@ from chromadb.config import Settings as ChromaSettings
 
 def check_progress():
     db_path = "./chroma_db"
-    collection_name = "mindos_rag"
+    collection_name = "enkratflow_rag"
     
     if not os.path.exists(db_path):
         print("❌ ChromaDB folder doesn't exist yet. Indexing hasn't started.")

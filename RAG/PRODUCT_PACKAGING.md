@@ -1,6 +1,6 @@
 # Product Packaging Guide
 
-This document outlines how to package the MindOS RAG system for distribution on Gumroad.
+This document outlines how to package the EnkratFlow RAG system for distribution on Gumroad.
 
 ## Pre-Packaging Checklist
 
@@ -16,7 +16,7 @@ This document outlines how to package the MindOS RAG system for distribution on 
 The final ZIP file should contain:
 
 ```
-mindos-rag-system/
+enkratflow-rag-system/
 ├── src/                    # Source code
 │   ├── ingestors/
 │   ├── chunking/
@@ -57,8 +57,8 @@ mindos-rag-system/
 
 4. **Create ZIP:**
    ```bash
-   cd /Users/guyrobo/MindOS/MindOS-Labs/RAG
-   zip -r mindos-rag-system.zip . -x "*.pyc" "__pycache__/*" ".git/*" "chroma_db/*" ".env" "venv/*"
+   cd /Users/guyrobo/EnkratFlow/EnkratFlow-Labs/RAG
+   zip -r enkratflow-rag-system.zip . -x "*.pyc" "__pycache__/*" ".git/*" "chroma_db/*" ".env" "venv/*"
    ```
 
 5. **Test Package:**
@@ -69,7 +69,7 @@ mindos-rag-system/
 ## Gumroad Listing
 
 ### Product Title
-"MindOS RAG System - Personal Knowledge Base with AI"
+"EnkratFlow RAG System - Personal Knowledge Base with AI"
 
 ### Description
 Build your own personal RAG (Retrieval-Augmented Generation) system to solve the context loss problem with AI. This system lets you:

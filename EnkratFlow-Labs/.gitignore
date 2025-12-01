@@ -1,9 +1,0 @@
-.DS_Store
-.vscode/
-*.swp
-.env
-.env.local
-node_modules/
-__pycache__/
-*.py[cod]
-.venv/ai-dev-tasks-main.zip

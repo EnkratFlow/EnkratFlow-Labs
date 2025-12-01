@@ -30,7 +30,7 @@ embeddings:
 sources:
   obsidian:
     enabled: true
-    vault_path: /Users/guyrobo/MindOS/MindOS-Core/MindOS
+    vault_path: /Users/guyrobo/Documents/EnkratVault
     file_extensions: [.md]
   notion:
     enabled: false
